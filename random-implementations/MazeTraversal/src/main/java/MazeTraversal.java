@@ -9,97 +9,96 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Iterator;
-import java.util.List;
 
 /**
  * Created by Aravind Selvan on 10/10/14.
  */
 public class MazeTraversal {
-    private static String mazeIdentifier = "123456.5"; //529793739585927847.23
+    private static String mazeIdentifier = "126201787089217298.8";//"123456.5"; //529793739585927847.23
     private static String startURL = "https://challenge.flipboard.com/step?s=" + mazeIdentifier + "&x=0&y=0";
     private static String rawURl = "https://challenge.flipboard.com/step?s=" + mazeIdentifier + "&x=";
-    private static int adjacentX, adjacentY;
     private static boolean[][] isVisited = new boolean[1000][1000]; //todo optimize
 
     public static void main(String[] args) throws IOException {
-
         URL url = new URL(startURL);
         HttpURLConnection httpConnection = (HttpURLConnection) url.openConnection();
         httpConnection.connect();
-
         JsonParser jsonParser = new JsonParser();
-        JsonObject jsonObject = getJsonObject(jsonParser, httpConnection, startURL);
-        String letter = jsonObject.get("letter").getAsString();
-        String isEnd = jsonObject.get("end").getAsString();
-        JsonArray jsonArray = jsonObject.get("adjacent").getAsJsonArray();
-
-        if (null != jsonArray) { //todo don't use loop, just one element
-            Iterator<JsonElement> nextCells = jsonArray.iterator();
-            while (nextCells.hasNext()) {
-                JsonObject current = nextCells.next().getAsJsonObject();
-                adjacentX = current.get("x").getAsInt();
-                adjacentY = current.get("y").getAsInt();
-            }
+        String mazePath = null;
+        mazePath = findMazePaths(jsonParser, isVisited, new Element(0, 0), new StringBuilder()).toString();
+        if (null != mazePath) {
+            System.out.println("Path for the given /start URL:" + startURL + "\n" + mazePath);
         }
-        isVisited[0][0] = true;
-        findMazePaths(jsonParser, httpConnection, isVisited, new Element(adjacentX, adjacentY), new StringBuilder(letter));
-
-
-        int l = 0;
+        else {
+            System.out.println("No path found for the given /start URL:" + startURL);
+        }
     }
 
-    private static StringBuilder findMazePaths(JsonParser jsonParser, HttpURLConnection httpConnection, boolean[][] isVisited, Element end, StringBuilder r) throws IOException {
+    private static StringBuilder findMazePaths(JsonParser jsonParser, boolean[][] isVisited, Element end, StringBuilder path) throws IOException {
 
-        if (isVisited[end.row][end.column] == true) return null;
-
-        StringBuilder result = new StringBuilder(r);
-        Element[] nextElements = new Element[4];
-        int currentX = end.row;
-        int currentY = end.column;
-        String currentURL = URLConstructor(currentX, currentY);
-        URL url = new URL(currentURL);
-        httpConnection = (HttpURLConnection) url.openConnection();
-        JsonObject jsonObject = getJsonObject(jsonParser, httpConnection, currentURL);
-        String letter = jsonObject.get("letter").getAsString();
-        String isEnd = jsonObject.get("end").getAsString();
-
-        System.out.println("Current X=" + currentX + ", Y=" + currentY);
-        result.append(letter);
-        if (isEnd.equals("true")) {
-            System.out.println(result);
-            return result;
-        }
-
-        JsonArray jsonArray = jsonObject.get("adjacent").getAsJsonArray();
-
-
-        int nextX, nextY, index = 0;
-        if (null != jsonArray) {
-            Iterator<JsonElement> nextCells = jsonArray.iterator();
-            while (nextCells.hasNext()) {
-                JsonObject current = nextCells.next().getAsJsonObject();
-                nextX = current.get("x").getAsInt();
-                nextY = current.get("y").getAsInt();
-                nextElements[index] = new Element(nextX, nextY);
-                ++index;
+        try {
+            if (isVisited[end.getRow()][end.getColumn()] == true) {
+                return null;
             }
-        }
-        isVisited[currentX][currentY] = true;
-        int i = 0;
-        for (Element element : nextElements) {
-            /*System.out.println(i);
-            ++i;*/
-            if (element != null) {
-                StringBuilder paths = findMazePaths(jsonParser, httpConnection, isVisited, element, result);
-                if (paths != null) {
 
+            StringBuilder result = new StringBuilder(path);
+            Element[] nextElements = new Element[4];
+            int currentX = end.getRow();
+            int currentY = end.getColumn();
+            String constructedURLString = URLConstructor(currentX, currentY);
+            URL url = new URL(constructedURLString);
+            HttpURLConnection httpConnection = (HttpURLConnection) url.openConnection();
+            JsonObject jsonObject = getJsonObject(jsonParser, httpConnection);
+            if (null == jsonObject) {
+                throw new Exception("ERROR: JSON parsing error for the URL:" + constructedURLString);
+            }
+            String letter = jsonObject.get("letter").getAsString();
+            if (null == letter || letter.equals("")) {
+                throw new Exception("ERROR: 'letter' element parsing error for the URL:" + constructedURLString);
+            }
+
+            String isEnd = jsonObject.get("end").getAsString(); 
+            if (null == isEnd || isEnd.equals("")) {
+                throw new Exception("ERROR: 'end' element parsing error for the URL:" + constructedURLString);
+            }
+
+            //System.out.println("Current X=" + currentX + ", Y=" + currentY);
+            result.append(letter);
+            if (isEnd.equals("true")) {
+                //System.out.println(result);
+                return result;
+            }
+
+            JsonArray jsonArray = jsonObject.get("adjacent").getAsJsonArray();
+
+            int nextX, nextY, index = 0;
+            if (null != jsonArray) {
+                Iterator<JsonElement> nextCells = jsonArray.iterator();
+                while (nextCells.hasNext()) {
+                    JsonObject current = nextCells.next().getAsJsonObject(); //todo add error check
+                    nextX = current.get("x").getAsInt();
+                    nextY = current.get("y").getAsInt();
+                    nextElements[index] = new Element(nextX, nextY);
+                    ++index;
+                }
+            }
+            isVisited[currentX][currentY] = true;
+            for (Element element : nextElements) {
+                if (element != null) {
+                    StringBuilder foundPath = findMazePaths(jsonParser, isVisited, element, result);
+                    if (foundPath != null) {
+                        return foundPath;
+                    }
                 }
             }
 
+            return result;
+
+        } catch (Exception e) {
+            System.out.println(e);
+            e.printStackTrace();
         }
-
-
-        return result;
+        return null;
     }
 
     private static String URLConstructor(int x, int y) {
@@ -108,7 +107,7 @@ public class MazeTraversal {
     }
 
 
-    private static JsonObject getJsonObject(JsonParser jsonParser, HttpURLConnection httpConnection, String url) throws IOException {
+    private static JsonObject getJsonObject(JsonParser jsonParser, HttpURLConnection httpConnection) throws IOException {
         try {
             JsonElement node = jsonParser.parse(new InputStreamReader((InputStream) httpConnection.getContent()));
             JsonObject jsonObject = node.getAsJsonObject();
@@ -122,17 +121,10 @@ public class MazeTraversal {
 
     private static class Element {
         private int row;
+        private int column;
 
-        public Element(int x, int y) {
-            row = x;
-            column = y;
-        }
-
-        public int getColumn() {
-            return column;
-        }
-
-        public void setColumn(int column) {
+        public Element(int row, int column) {
+            this.row = row;
             this.column = column;
         }
 
@@ -140,11 +132,8 @@ public class MazeTraversal {
             return row;
         }
 
-        public void setRow(int row) {
-            this.row = row;
+        public int getColumn() {
+            return column;
         }
-
-        private int column;
-
     }
 }
