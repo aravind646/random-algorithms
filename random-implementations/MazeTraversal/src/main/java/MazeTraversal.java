@@ -26,19 +26,18 @@ public class MazeTraversal {
             bufferedReader = new BufferedReader(new FileReader("/home/goku/Dropbox/algorithms-and-coding/random-implementations/MazeTraversal/src/main/java/inputURLs.txt"));
             startURL = bufferedReader.readLine();
             while (startURL != null) {
+                int indexCheckURL = startURL.indexOf("?s=");
                 int indexToExtractRawIURL = startURL.indexOf("&x=");
                 if (-1 != indexToExtractRawIURL) {
                     rawURl = startURL.substring(0, indexToExtractRawIURL + 3);
                 }
                 URL url = new URL(startURL);
                 HttpURLConnection httpConnection = (HttpURLConnection) url.openConnection();
-                /*httpConnection.connect();
-                httpConnection.disconnect();*/
+
 
                 JsonParser jsonParser = new JsonParser();
                 JsonObject jsonObject = getJsonObject(jsonParser, httpConnection, startURL);
                 String letter = jsonObject.get("letter").getAsString();
-                String isEnd = jsonObject.get("end").getAsString();
                 JsonArray jsonArray = jsonObject.get("adjacent").getAsJsonArray();
 
                 if (null != jsonArray) { //todo don't use loop, just one element
@@ -53,12 +52,24 @@ public class MazeTraversal {
                 isVisited[0][0] = true;
                 StringBuilder result = findMazePaths(jsonParser, httpConnection, isVisited, new Element(adjacentX, adjacentY), new StringBuilder(letter));
 
-//                https://challenge.flipboard.com/check?s=5877569860164052107.9&guess=xxwdmmxmoxtiyqarctvvwqujne
-                startURL = bufferedReader.readLine();            }
+                String checkURL = startURL.substring(indexCheckURL+1, indexToExtractRawIURL);
+                String toCheckURL = "https://challenge.flipboard.com/check?" + checkURL +
+                        "&guess=" + result;
+                url = new URL(toCheckURL);
+                httpConnection = (HttpURLConnection) url.openConnection();
+                jsonParser = new JsonParser();
+                JsonElement node = jsonParser.parse(new InputStreamReader((InputStream) httpConnection.getContent()));
+                jsonObject = node.getAsJsonObject();
+                letter = jsonObject.get("success").getAsString();
+                System.out.println(letter);
+
+                startURL = bufferedReader.readLine();
+
+            }
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            if (null != bufferedReader) bufferedReader.clocse();
+            if (null != bufferedReader) bufferedReader.close();
         }
     }
 
@@ -77,7 +88,7 @@ public class MazeTraversal {
         String letter = jsonObject.get("letter").getAsString();
         String isEnd = jsonObject.get("end").getAsString();
 
-        System.out.println("Current X=" + currentX + ", Y=" + currentY);
+        //System.out.println("Current X=" + currentX + ", Y=" + currentY);
         result.append(letter);
         if (isEnd.equals("true")) {
             System.out.println(result);
@@ -100,18 +111,20 @@ public class MazeTraversal {
         }
         isVisited[currentX][currentY] = true;
         int i = 0;
+        StringBuilder paths = null;
         for (Element element : nextElements) {
-
             if (element != null) {
-                StringBuilder paths = findMazePaths(jsonParser, httpConnection, isVisited, element, result);
+                paths = findMazePaths(jsonParser, httpConnection, isVisited, element, result);
                 if (paths != null) {
+                    return paths;
+
 
                 }
             }
         }
 
 
-        return result;
+        return paths;
     }
 
     private static String URLConstructor(int x, int y) {
