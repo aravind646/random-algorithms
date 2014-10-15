@@ -17,7 +17,7 @@
     </dependency>
     </dependencies>
 
-    <artifactId>MazeTraversal</artifactId>
+    <artifactId>flipboard.maze.MazeTraversal</artifactId>
 
 
 </project>

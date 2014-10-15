@@ -1,3 +1,4 @@
+/*
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -13,16 +14,18 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Iterator;
 
+*/
 /**
  * Created by Aravind Selvan on 10/10/14.
- */
+ *//*
+
 
 public class backupNotworking {
     static boolean[][] isVisited;
     static String startURL, rawURl;
 
     public static void main(String[] args) throws IOException {
-        BufferedReader bufferedReader = new BufferedReader(new FileReader("/home/goku/Dropbox/algorithms-and-coding/random-implementations/MazeTraversal/src/main/java/inputURLs.txt"));
+        BufferedReader bufferedReader = new BufferedReader(new FileReader("/home/goku/Dropbox/algorithms-and-coding/random-implementations/flipboard.maze.MazeTraversal/src/main/java/inputURLs.txt"));
         try {
             startURL = bufferedReader.readLine();
             while (startURL != null) {
@@ -153,3 +156,4 @@ public class backupNotworking {
         }
     }
 }
+*/
