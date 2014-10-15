@@ -1,0 +1,13 @@
+Usage:
+
+java -jar MazeTraversal.jar input_file_path output_file_path
+
+Program arguments:  
+(1) input_file_path - reads from the input_file_path (args[0]) and  
+the default behaviour is to look in the current working directory.    
+(2) output_file_path - writes to the output_file_path (args[1]) and  
+the default behaviour is to create/overwrite the file in the current working directory. 
+
+The input file contains the list of start URLs (separated by new line), the program calculates  
+
+the maze path until the values from the input file is exhausted.

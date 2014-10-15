@@ -4,36 +4,54 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
 
 /**
- * Created by Aravind Selvan on 10/10/14.
+ * Main class that performs the traversal of the given maze using a recursive DFS.
+ * Created by Aravind Selvan on 10/14/14.
+ * <p/>
+ * Usage (1): java -jar MazeTraversal.jar input_file_path output_ file_path Program arguments: (1)
+ * input_file_path - reads from the input_file_path (args[0]) and the default behaviour is to look
+ * in the current working directory. (2) output_file_path - writes to the output_file_path (args[1])
+ * and the default behaviour is to create/overwrite the file in the current working directory.
+ * <p/>
+ * The input file contains the list of start URLs (separated by new line), the program calculates
+ * the maze path until the values from the input file is exhausted.
+ * The JSON parsing is done with the help of 'gson' library.
  */
 public class MazeTraversal {
     static String startURL, rawURl;
     private static HashMap<Integer, Boolean> isVisited;
     private static String inputFilePath, outputFilePath;
+    private static StringBuilder flushToOutputFile;
 
     public static void main(String[] args) throws IOException {
         BufferedReader bufferedReader = null;
+        PrintWriter writer = null;
         try {
+            printUsage();
             if (args.length == 2) {
                 inputFilePath = args[0];
                 outputFilePath = args[1];
             } else {
-                inputFilePath = new StringBuilder(System.getProperty("user.dir")).append("/inputURLs.txt").toString();
-                outputFilePath = new StringBuilder(System.getProperty("user.dir")).append("/outputMazePaths.txt").toString();
+                inputFilePath = new StringBuilder(System.getProperty("user.dir")).append("/input.txt").toString();
+                outputFilePath = new StringBuilder(System.getProperty("user.dir")).append("/output.txt").toString();
             }
             bufferedReader = new BufferedReader(new FileReader(inputFilePath));
+            writer = new PrintWriter(outputFilePath, "UTF-8");
+            flushToOutputFile = new StringBuilder();
             startURL = bufferedReader.readLine();
+            System.out.println(MazePathConstantsAndFields.calculatingMazePaths);
             while (startURL != null) {
                 int indexCheckURL = startURL.indexOf(MazePathConstantsAndFields.sIndexer);
                 int indexToExtractRawIURL = startURL.indexOf(MazePathConstantsAndFields.xIndexer);
@@ -67,13 +85,18 @@ public class MazeTraversal {
                 }
                 isVisited = new HashMap<Integer, Boolean>();
                 isVisited.put(0, true);
-                StringBuilder mazePath = findMazePaths(jsonParser, isVisited, new Element(adjacentX, adjacentY), new StringBuilder(letter));
+                StringBuilder mazePath = findMazePath(jsonParser, isVisited, new Element(adjacentX, adjacentY), new StringBuilder(letter));
+                String currentOutput;
                 if (null == mazePath) {
-                    System.out.println(new StringBuilder(MazePathConstantsAndFields.mazePathNotFound).append(startURL).toString());
+                    currentOutput = new StringBuilder(MazePathConstantsAndFields.mazePathNotFound).append(startURL).toString();
+                    System.out.println(currentOutput);
+                    flushToOutputFile.append(currentOutput).append("\n");
                 } else {
-                    System.out.println(new StringBuilder(MazePathConstantsAndFields.mazePathFound).append(startURL).append("\nMaze Path:").append(mazePath).toString());
+                    currentOutput = new StringBuilder(MazePathConstantsAndFields.mazePathFound).append(startURL).append("\nMaze Path:").append(mazePath).toString();
+                    System.out.println(currentOutput);
+                    flushToOutputFile.append(currentOutput).append("\n");
                     String mazeIdentifier = startURL.substring(indexCheckURL + 1, indexToExtractRawIURL);
-                    String checkURL = new StringBuilder(MazePathConstantsAndFields.checkURLPrefix).append(mazeIdentifier).append(MazePathConstantsAndFields.checkURLGuess).append(mazePath).toString();
+                    String checkURL = new StringBuilder(MazePathConstantsAndFields.checkURLPrefix).append(mazeIdentifier).append(MazePathConstantsAndFields.checkURLSuffix).append(mazePath).toString();
                     url = new URL(checkURL);
                     httpConnection = (HttpURLConnection) url.openConnection();
                     jsonParser = new JsonParser();
@@ -84,31 +107,50 @@ public class MazeTraversal {
                         throw new Exception(new StringBuilder(MazePathConstantsAndFields.malformedLetterAttributeError).append(startURL).toString());
                     }
                     if (letter.equals(MazePathConstantsAndFields.isTRUE)) {
-                        System.out.println(new StringBuilder(MazePathConstantsAndFields.checkSuccess).append(checkURL));
+                        currentOutput = new StringBuilder(MazePathConstantsAndFields.checkSuccess).append(checkURL).toString();
+                        System.out.println(currentOutput);
+                        flushToOutputFile.append(currentOutput).append("\n");
                     } else {
-                        System.out.println(new StringBuilder(MazePathConstantsAndFields.checkUnSuccess).append(checkURL));
+                        currentOutput = new StringBuilder(MazePathConstantsAndFields.checkUnSuccess).append(checkURL).toString();
+                        System.out.println(currentOutput);
+                        flushToOutputFile.append(currentOutput).append("\n");
                     }
                 }
                 System.out.println();
+                flushToOutputFile.append("\n");
                 startURL = bufferedReader.readLine();
             }
+            writer.print(flushToOutputFile);
+            System.out.println("Done!");
         } catch (Exception e) {
             System.out.println(e);
             e.printStackTrace();
         } finally {
             if (null != bufferedReader) bufferedReader.close();
+            if (null != writer) writer.close();
         }
     }
 
-    private static StringBuilder findMazePaths(JsonParser jsonParser, HashMap<Integer, Boolean> isHash, Element end, StringBuilder r) throws Exception {
+    private static void printUsage() {
+        System.out.println("Usage:\njava -jar MazeTraversal.jar input_file_path output_file_path\n" +
+                "Program arguments: \n" +
+                "(1) input_file_path - reads from the input_file_path (args[0]) and \n" +
+                "the default behaviour is to look in the current working directory.   \n" +
+                "(2) output_file_path - writes to the output_file_path (args[1]) and \n" +
+                "the default behaviour is to create/overwrite the file in the current working directory.\n" +
+                "The input file contains the list of start URLs (separated by new line), the program calculates \n" +
+                "the maze path until the values from the input file is exhausted.\n");
+    }
+
+    private static StringBuilder findMazePath(JsonParser jsonParser, HashMap<Integer, Boolean> isHash, Element end, StringBuilder inputString) throws Exception {
 
         Boolean checkVisited = isHash.get((Integer.parseInt(end.getRow() + MazePathConstantsAndFields.emptyString + end.getColumn())));
         if (null != checkVisited && checkVisited == true) {
             return null;
         }
 
-        StringBuilder result = new StringBuilder(r);
-        Element[] nextElements = new Element[MazePathConstantsAndFields.numberOfJSONMazeElements];
+        StringBuilder result = new StringBuilder(inputString);
+        Element[] nextElements = new Element[MazePathConstantsAndFields.numberOfNeighbours];
         int currentX = end.getRow();
         int currentY = end.getColumn();
         String currentURL = URLConstructor(currentX, currentY);
@@ -139,22 +181,21 @@ public class MazeTraversal {
                             JsonObject current = nextCells.next().getAsJsonObject();
                             nextX = current.get(MazePathConstantsAndFields.XAttribute).getAsInt();
                             nextY = current.get(MazePathConstantsAndFields.YAttribute).getAsInt();
-                            nextElements[index] = new Element(nextX, nextY);
-                            ++index;
+                            nextElements[index++] = new Element(nextX, nextY);
                         }
                     }
                     isHash.put((Integer.parseInt(currentX + MazePathConstantsAndFields.emptyString + currentY)), true);
-                    StringBuilder paths = null;
+                    StringBuilder path = null;
                     for (Element element : nextElements) {
                         if (element != null) {
-                            paths = findMazePaths(jsonParser, isHash, element, result);
-                            if (paths != null) {
-                                return paths;
+                            path = findMazePath(jsonParser, isHash, element, result);
+                            if (path != null) {
+                                return path;
                             }
                         }
                     }
 
-                    return paths;
+                    return path;
                 }
             }
         }
