@@ -1,0 +1,28 @@
+Path found for the start URL https://challenge.flipboard.com/step?s=123456.5&x=0&y=0
+Maze Path:pqkefzvymrbtfqkrdik
+SUCCESS: The check endpoint returns a successful response for https://challenge.flipboard.com/check?s=123456.5&guess=pqkefzvymrbtfqkrdik
+
+Path found for the start URL https://challenge.flipboard.com/step?s=4800008144677907720.7&x=0&y=0
+Maze Path:fpuzcfznnvxawdgtji
+SUCCESS: The check endpoint returns a successful response for https://challenge.flipboard.com/check?s=4800008144677907720.7&guess=fpuzcfznnvxawdgtji
+
+Path found for the start URL https://challenge.flipboard.com/step?s=4461046680422730170.10&x=0&y=0
+Maze Path:dusdqrawpcqxovodkohljkn
+SUCCESS: The check endpoint returns a successful response for https://challenge.flipboard.com/check?s=4461046680422730170.10&guess=dusdqrawpcqxovodkohljkn
+
+Path found for the start URL https://challenge.flipboard.com/step?s=7687186813104574367.7&x=0&y=0
+Maze Path:zbazbfzgzzvqbrgnnscdihczyu
+SUCCESS: The check endpoint returns a successful response for https://challenge.flipboard.com/check?s=7687186813104574367.7&guess=zbazbfzgzzvqbrgnnscdihczyu
+
+Path found for the start URL https://challenge.flipboard.com/step?s=5877569860164052107.9&x=0&y=0
+Maze Path:xxwdmmxmoxtiyqarctvvwqujne
+SUCCESS: The check endpoint returns a successful response for https://challenge.flipboard.com/check?s=5877569860164052107.9&guess=xxwdmmxmoxtiyqarctvvwqujne
+
+Path found for the start URL https://challenge.flipboard.com/step?s=2704527122040876597.17&x=0&y=0
+Maze Path:airxybtkqadxmvaoljhfu
+SUCCESS: The check endpoint returns a successful response for https://challenge.flipboard.com/check?s=2704527122040876597.17&guess=airxybtkqadxmvaoljhfu
+
+Path found for the start URL https://challenge.flipboard.com/step?s=4173335779684773244.9&x=0&y=0
+Maze Path:rzapzilfdxcdniefgtgchshdqqqmjxswly
+SUCCESS: The check endpoint returns a successful response for https://challenge.flipboard.com/check?s=4173335779684773244.9&guess=rzapzilfdxcdniefgtgchshdqqqmjxswly
+

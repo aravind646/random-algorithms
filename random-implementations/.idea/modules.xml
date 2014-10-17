@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/MazeTraversal/MazeTraversal.iml" filepath="$PROJECT_DIR$/MazeTraversal/MazeTraversal.iml" />
+      <module fileurl="file://$PROJECT_DIR$/StringToLong/StringToLong.iml" filepath="$PROJECT_DIR$/StringToLong/StringToLong.iml" />
       <module fileurl="file://$PROJECT_DIR$/random-implementations.iml" filepath="$PROJECT_DIR$/random-implementations.iml" />
     </modules>
   </component>
